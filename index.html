@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3C6A35">
+<title>Furrow App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: case-study panel on the left, a working phone prototype on the right; stacks on phones */
+:root{
+  --bg:#E9ECE0; --surface:#F8F9F2; --surface-2:#EFF2E6; --ink:#1E281D; --muted:#5D6A58; --line:#D3D9C6;
+  --moss:#3C6A35; --moss-ink:#F3F8EE; --soil:#7A5838; --water:#2A8296; --water-soft:#D6ECEF;
+  --warn:#B4651F; --danger:#A8432F;
+  --z-veg:#3C6A35; --z-lawn:#7FA14E; --z-orch:#C27A34; --z-field:#A88C2E;
+  --frame:#232B22;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121812; --surface:#1B231A; --surface-2:#222C21; --ink:#E4ECDD; --muted:#98A68F; --line:#2E3A2C;
+  --moss:#8CC277; --moss-ink:#14200F; --soil:#C79D74; --water:#5EC0D2; --water-soft:#18363C;
+  --warn:#E09A52; --danger:#E07A63;
+  --z-veg:#8CC277; --z-lawn:#B7D27A; --z-orch:#E0A160; --z-field:#D6BC5A; --frame:#0A0E0A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121812; --surface:#1B231A; --surface-2:#222C21; --ink:#E4ECDD; --muted:#98A68F; --line:#2E3A2C;
+  --moss:#8CC277; --moss-ink:#14200F; --soil:#C79D74; --water:#5EC0D2; --water-soft:#18363C;
+  --warn:#E09A52; --danger:#E07A63;
+  --z-veg:#8CC277; --z-lawn:#B7D27A; --z-orch:#E0A160; --z-field:#D6BC5A; --frame:#0A0E0A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+html,body{height:100%}
+body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
+.app{position:relative;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+@media (min-width:640px){.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+.demo-card{display:flex;flex-direction:column;gap:12px}
+.demo-card p{margin:0;color:var(--muted);font-size:13px}
+
+.ctrl-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctrl-row .lbl{font-size:13px;color:var(--muted);min-width:82px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:3px;border:1px solid var(--line)}
+.seg button{padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.ghost{padding:7px 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;background:var(--surface)}
+.ghost:hover{border-color:var(--muted)}
+
+/* ---------- phone ---------- */
+main{flex:1;overflow-y:auto;padding:18px 18px 24px;display:flex;flex-direction:column;gap:16px;scrollbar-width:none}
+main::-webkit-scrollbar{display:none}
+
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;padding-top:4px}
+.hdr h2{font-family:var(--f-display);font-weight:800;font-size:28px;letter-spacing:-.02em;margin:0;line-height:1.05}
+.hdr small{display:block;color:var(--muted);font-size:13px}
+.icon-btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.icon-btn svg{width:18px;height:18px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px}
+.dev{display:flex;gap:12px;align-items:center}
+.dev .ble{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--water-soft);color:var(--water);flex:none}
+.dev .ble svg{width:22px;height:22px}
+.dev .ble.off{background:var(--surface-2);color:var(--muted)}
+.dev .meta{flex:1;min-width:0}
+.dev .meta b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dev .meta span{font-size:12.5px;color:var(--muted);font-family:var(--f-mono)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--moss);margin-right:5px;vertical-align:1px}
+.dot.off{background:var(--danger)}
+.pill-btn{padding:8px 14px;border-radius:999px;background:var(--moss);color:var(--moss-ink);font-weight:600;font-size:13.5px;white-space:nowrap}
+.pill-btn.sec{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+
+/* pump hero */
+.pump{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 16px}
+.ring{position:relative;width:200px;height:200px}
+.ring>svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .track{stroke:var(--surface-2);fill:none;stroke-width:12}
+.ring .prog{stroke:var(--water);fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.ring-center{position:absolute;inset:20px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.go{position:absolute;inset:22px;border-radius:50%;background:var(--moss);color:var(--moss-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:inset 0 -6px 0 rgb(0 0 0/.12)}
+.go:hover{filter:brightness(1.06)}
+.go:disabled{background:var(--surface-2);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.go svg{width:34px;height:34px}
+.go b{font-family:var(--f-display);font-size:22px;font-weight:800}
+.go small{font-size:12px;opacity:.85}
+.count{font-family:var(--f-mono);font-size:38px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ring-center small{color:var(--muted);font-size:12px}
+.ripple{position:absolute;inset:22px;border-radius:50%;overflow:hidden;pointer-events:none}
+.ripple i{position:absolute;left:-25%;width:150%;aspect-ratio:1;border-radius:42%;background:var(--water-soft);animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring-center>*{position:relative}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;background:var(--surface);color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.chip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+.flowline{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);text-align:center}
+.stop{padding:10px 22px;border-radius:999px;background:var(--danger);color:#fff;font-weight:600}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+.stat .k{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-family:var(--f-display);font-weight:700;font-size:20px;line-height:1.2;font-variant-numeric:tabular-nums}
+.stat .s{font-size:12px;color:var(--muted)}
+
+.sec-title{display:flex;justify-content:space-between;align-items:baseline;margin:4px 2px -4px}
+.sec-title h3{font-family:var(--f-display);font-size:17px;margin:0}
+.sec-title button{color:var(--water);font-weight:600;font-size:13.5px}
+
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0;padding-top:0}
+.row:last-child{padding-bottom:0}
+.tm{font-family:var(--f-mono);font-size:17px;font-weight:500;width:54px;flex:none;font-variant-numeric:tabular-nums}
+.row .mid{flex:1;min-width:0}
+.row .mid b{display:block;font-weight:600;font-size:14.5px}
+.row .mid span{font-size:12.5px;color:var(--muted)}
+.zbar{width:4px;align-self:stretch;border-radius:4px;flex:none}
+
+/* schedules */
+.week{display:grid;grid-template-columns:28px 1fr;gap:5px 8px;align-items:center}
+.week .d{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.week .d.today{color:var(--ink);font-weight:600}
+.lane{position:relative;height:14px;border-radius:4px;background:var(--surface-2)}
+.lane i{position:absolute;top:2px;bottom:2px;border-radius:3px;min-width:4px}
+.lane .now{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--danger);border-radius:2px}
+.axis{grid-column:2;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10px;color:var(--muted)}
+
+.sched{display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;width:100%}
+.sched-top{display:flex;align-items:center;gap:12px}
+.sched-top .tm{font-size:26px;width:auto}
+.sched-top .mid{flex:1;min-width:0}
+.sched-top .mid b{display:block;font-weight:600}
+.sched-top .mid span{font-size:12.5px;color:var(--muted)}
+.sched.off .tm,.sched.off .mid{opacity:.45}
+.daydots{display:flex;gap:4px}
+.daydots span{width:26px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--f-mono);background:var(--surface-2);color:var(--muted)}
+.daydots span.on{background:var(--water-soft);color:var(--water)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11.5px;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+
+.switch{width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgb(0 0 0/.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--moss)}
+.switch[aria-checked="true"]::after{transform:translateX(18px)}
+
+.fab{position:absolute;right:20px;bottom:88px;width:56px;height:56px;border-radius:18px;background:var(--moss);color:var(--moss-ink);display:grid;place-items:center;box-shadow:0 10px 20px -8px rgb(30 50 20/.5)}
+.fab svg{width:24px;height:24px}
+
+/* zones */
+.zone{display:flex;flex-direction:column;gap:12px}
+.zone-top{display:flex;gap:12px;align-items:center}
+.zone-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:#fff}
+.zone-ic svg{width:20px;height:20px}
+.zone-top .mid{flex:1;min-width:0}
+.zone-top .mid b{display:block;font-weight:600}
+.zone-top .mid span{font-size:12.5px;color:var(--muted)}
+.moist{display:flex;flex-direction:column;gap:5px}
+.moist .lab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.moist .lab b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.bar{height:8px;border-radius:8px;background:var(--surface-2);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:8px;background:var(--water)}
+.bar .target{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.35}
+.zgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:12px;color:var(--muted)}
+.zgrid b{display:block;color:var(--ink);font-family:var(--f-mono);font-weight:500;font-size:13px}
+
+/* activity */
+.day-h{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:2px 2px -6px}
+.src{font-size:11px;padding:2px 7px;border-radius:6px;font-weight:600}
+.src.auto{background:var(--water-soft);color:var(--water)}
+.src.man{background:var(--surface-2);color:var(--soil)}
+.src.skip{background:var(--surface-2);color:var(--warn)}
+.lit{font-family:var(--f-mono);font-size:13px;text-align:right;flex:none}
+.lit small{display:block;color:var(--muted);font-size:11px}
+
+/* tabs */
+.tabs{flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--line);padding:8px 10px 10px}
+.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted);padding:6px 0;border-radius:12px}
+.tabs svg{width:22px;height:22px}
+.tabs button[aria-current="page"]{color:var(--moss)}
+
+/* sheet */
+.scrim{position:absolute;inset:0;background:rgb(10 16 8/.42);display:flex;align-items:flex-end;z-index:5;animation:fade .2s}
+.sheet{background:var(--surface);width:100%;border-radius:26px 26px 0 0;padding:10px 20px 28px;max-height:88%;overflow-y:auto;display:flex;flex-direction:column;gap:16px;animation:up .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+@keyframes fade{from{opacity:0}}
+.grab{width:40px;height:5px;border-radius:5px;background:var(--line);margin:0 auto}
+.sheet h3{font-family:var(--f-display);font-size:22px;margin:0}
+.field{display:flex;flex-direction:column;gap:8px}
+.field>label,.field>.fl{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.field .chips{justify-content:flex-start}
+.timein{font-family:var(--f-mono);font-size:34px;font-weight:500;padding:8px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);color:var(--ink);width:100%}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.days button{height:38px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:13px;color:var(--muted);background:var(--surface)}
+.days button[aria-pressed="true"]{background:var(--water);border-color:var(--water);color:var(--surface)}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{font-size:12.5px;color:var(--water);font-weight:600}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);font-size:22px;background:var(--surface-2)}
+.stepper output{font-family:var(--f-mono);font-size:24px;min-width:90px;text-align:center}
+.stepper small{color:var(--muted);font-size:12.5px;margin-left:auto;text-align:right}
+.trow{display:flex;align-items:center;gap:12px}
+.trow div{flex:1}
+.trow b{display:block;font-weight:600;font-size:14.5px}
+.trow span{font-size:12.5px;color:var(--muted)}
+.actions{display:flex;gap:10px}
+.actions .pill-btn{flex:1;padding:13px;font-size:15px;text-align:center}
+.danger-link{color:var(--danger);font-weight:600;padding:13px 6px}
+
+.scan{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0}
+.radar{width:120px;height:120px;border-radius:50%;position:relative;display:grid;place-items:center;color:var(--water)}
+.radar svg{width:36px;height:36px;position:relative}
+.radar::before,.radar::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--water);animation:pulse 1.8s ease-out infinite;opacity:0}
+.radar::after{animation-delay:.9s}
+@keyframes pulse{0%{transform:scale(.35);opacity:.9}100%{transform:scale(1);opacity:0}}
+.found{display:flex;flex-direction:column}
+.found button{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--line);text-align:left;animation:fade .3s}
+.found button:first-child{border-top:0}
+.found .mid{flex:1;min-width:0}
+.found b{display:block;font-weight:600}
+.found span{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.sig{display:flex;gap:2px;align-items:flex-end;height:14px}
+.sig i{width:3px;background:var(--line);border-radius:1px}
+.sig i.on{background:var(--moss)}
+
+.toast{position:absolute;left:18px;right:18px;bottom:90px;background:var(--ink);color:var(--surface);padding:12px 16px;border-radius:14px;font-size:14px;font-weight:500;z-index:9;animation:up .25s}
+.empty{text-align:center;color:var(--muted);padding:12px 0;font-size:14px}
+.note{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.note b{font-weight:600}
+.note span{color:var(--muted);font-size:13.5px}
+.note .pill-btn{margin-top:8px}
+.note.warn{border-color:var(--warn)}
+.backup summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}
+.backup summary::-webkit-details-marker{display:none}
+.backup summary span{color:var(--muted);font-size:13.5px}
+.backup ol{margin:12px 0 8px;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.cmds{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0}
+.cmds td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:top}
+.cmds code,.tcmd{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+.backup p{margin:8px 0 4px;font-size:13px;color:var(--muted)}
+.tcmd{display:inline-block;margin-top:4px;padding:6px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);user-select:all;-webkit-user-select:all}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="screen">
+  <main id="view"></main>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="overlay"></div>
+  <div class="toast" id="toast" hidden></div>
+</div>
+
+<script>
+const ICON={
+  ble:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>',
+  drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5s6.5 7.2 6.5 12a6.5 6.5 0 0 1-13 0c0-4.8 6.5-12 6.5-12z"/></svg>',
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></svg>',
+  leaf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19l8-8"/></svg>',
+  list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  sprout:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9M12 12c0-4-3-6-7-6 0 4 3 6 7 6zM12 10c0-3 2.5-5 6-5 0 3.5-2.5 5-6 5z"/></svg>',
+  grass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M6 20c0-5-2-8-2-8M10 20c0-7 1-11 1-11M14 20c0-6 2-9 2-9M18 20c0-4 2-6 2-6"/></svg>',
+  tree:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="M12 15v6M9 21h6"/></svg>',
+  field:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20L9 8h6l7 12M7 20l4-12M17 20l-4-12M4.5 15.5h15"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/></svg>'
+};
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const dow=d=>(d.getDay()+6)%7;
+const pad=n=>String(n).padStart(2,'0');
+const hm=d=>pad(d.getHours())+':'+pad(d.getMinutes());
+
+function seed(){
+  const now=Date.now(), H=3600e3;
+  return {
+    tab:'home', connected:true, speed:1,
+    device:{name:'Borehole Pump BP-200',mac:'F4:12:9A:3C:7E:01',rssi:-58,battery:86},
+    zones:[
+      {id:'veg',name:'Vegetable garden',kind:'Drip line',area:48,flow:6,moisture:41,target:55,icon:'sprout',last:now-26*H},
+      {id:'lawn',name:'Front lawn',kind:'Sprinklers',area:120,flow:18,moisture:28,target:40,icon:'grass',last:now-50*H},
+      {id:'orch',name:'Citrus orchard',kind:'Drip line',area:300,flow:14,moisture:52,target:50,icon:'tree',last:now-20*H},
+      {id:'field',name:'Lucerne field',kind:'Flood furrow',area:2400,flow:40,moisture:33,target:45,icon:'field',last:now-72*H}
+    ],
+    schedules:[
+      {id:1,zone:'veg',time:'06:00',days:[0,1,2,3,4,5,6],dur:20,on:true,skipRain:true},
+      {id:2,zone:'lawn',time:'05:30',days:[0,2,4],dur:15,on:true,skipRain:true},
+      {id:3,zone:'field',time:'19:00',days:[1,4],dur:45,on:true,skipRain:false},
+      {id:4,zone:'orch',time:'18:30',days:[2,5],dur:30,on:true,skipRain:true},
+      {id:5,zone:'lawn',time:'17:00',days:[5,6],dur:10,on:false,skipRain:true}
+    ],
+    log:[
+      {t:now-3.2*H,zone:'veg',min:20,src:'auto'},
+      {t:now-5*H,zone:'lawn',min:15,src:'skip'},
+      {t:now-20*H,zone:'orch',min:30,src:'auto'},
+      {t:now-26*H,zone:'veg',min:20,src:'auto'},
+      {t:now-28*H,zone:'veg',min:8,src:'man'},
+      {t:now-50*H,zone:'lawn',min:15,src:'auto'},
+      {t:now-51*H,zone:'veg',min:20,src:'auto'}
+    ],
+    usedToday:120,
+    pump:null, runDur:10, runZone:'veg', sheet:null, draft:null, pair:null,
+    real:false, replies:true, clock:null   // real = connected to the real Furrow pump over Bluetooth
+  };
+}
+function loadDemo(){const s=seed();try{const saved=JSON.parse(localStorage.getItem('furrow-schedules')||'null');if(Array.isArray(saved))s.schedules=saved}catch(e){}return s}
+let S=loadDemo();
+const save=()=>{if(S.real)return;try{localStorage.setItem('furrow-schedules',JSON.stringify(S.schedules))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const zone=id=>S.zones.find(z=>z.id===id);
+const zcol=id=>`var(--z-${id})`;
+
+function nextRuns(limit=5){
+  const now=new Date(),out=[];
+  for(const s of S.schedules){
+    if(!s.on||!s.days.length)continue;
+    const [h,m]=s.time.split(':').map(Number);
+    for(let i=0;i<8;i++){
+      const d=new Date(now);d.setDate(now.getDate()+i);d.setHours(h,m,0,0);
+      if(d>now&&s.days.includes(dow(d))){out.push({at:d,s});break}
+    }
+  }
+  return out.sort((a,b)=>a.at-b.at).slice(0,limit);
+}
+function whenLabel(d){
+  const now=new Date(),t=new Date(now);t.setHours(0,0,0,0);
+  const diff=Math.round((new Date(d).setHours(0,0,0,0)-t)/864e5);
+  return (diff===0?'Today':diff===1?'Tomorrow':DAYS[dow(d)])+' '+hm(d);
+}
+function daysLabel(days){
+  if(days.length===7)return 'Every day';
+  const k=[...days].sort().join();
+  if(k==='0,1,2,3,4')return 'Weekdays';
+  if(k==='5,6')return 'Weekends';
+  return [...days].sort().map(d=>DAYS[d]).join(', ');
+}
+const fmtMin=m=>m>=60?`${Math.floor(m/60)} h ${m%60?m%60+' min':''}`.trim():`${m} min`;
+const litres=(zid,min)=>Math.round(zone(zid).flow*min);
+const ago=t=>{const h=(Date.now()-t)/36e5;return h<1?'just now':h<24?Math.round(h)+' h ago':Math.round(h/24)+' d ago'};
+
+/* ---------------- views ---------------- */
+function tabsHTML(){
+  const t=[['home','Home',ICON.home],['sched','Schedules',ICON.cal],['zones','Zones',ICON.leaf],['log','Activity',ICON.list]].filter(x=>!(S.real&&x[0]==='zones'));
+  return t.map(([id,l,ic])=>`<button id="tab-${id}" data-act="tab" data-v="${id}" ${S.tab===id?'aria-current="page"':''}>${ic}${l}</button>`).join('');
+}
+function deviceCard(){
+  if(!S.connected&&S.real) return `<div class="card dev"><div class="ble off">${ICON.ble}</div>
+    <div class="meta"><b>${esc(S.device.name)}</b><span><i class="dot off"></i>Not connected</span></div>
+    <button class="pill-btn" id="b-pair" data-act="${BT.dev?'reconnect':'pair'}">${BT.dev?'Reconnect':'Pair pump'}</button></div>`;
+  if(!S.connected) return `<div class="card dev"><div class="ble off">${ICON.ble}</div>
+    <div class="meta"><b>No pump connected</b><span><i class="dot off"></i>Bluetooth ready</span></div>
+    <button class="pill-btn" id="b-pair" data-act="pair">Pair pump</button></div>`;
+  const d=S.device;
+  const info=S.real?(S.replies?'Your real pump · connected':'Real pump · old code'):`${d.rssi} dBm · ${d.battery}% battery`;
+  return `<div class="card dev"><div class="ble">${ICON.ble}</div>
+    <div class="meta"><b>${esc(d.name)}</b><span><i class="dot"></i>${info}</span></div>
+    <button class="pill-btn sec" id="b-dev" data-act="disconnect">Disconnect</button></div>`;
+}
+function homeView(){
+  const now=new Date(),greet=now.getHours()<12?'Good morning':now.getHours()<18?'Good afternoon':'Good evening';
+  const nx=nextRuns(4);
+  const p=S.pump;
+  let hero;
+  if(p){
+    const z=zone(p.zone),left=Math.max(0,p.total-p.elapsed);
+    hero=`<div class="card pump">
+      <div class="ring"><svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="88"/><circle class="prog" id="prog" cx="100" cy="100" r="88" stroke-dasharray="552.9" stroke-dashoffset="${552.9*(1-p.elapsed/p.total)}"/></svg>
+        <div class="ripple"><i style="top:${55}%"></i></div>
+        <div class="ring-center"><small>Watering ${z.name}</small><div class="count" id="count">${pad(Math.floor(left/60))}:${pad(Math.floor(left%60))}</div><small id="plit">${(z.flow*p.elapsed/60).toFixed(0)} L pumped</small></div></div>
+      <div class="flowline">${z.flow} L/min · ${p.src==='auto'?'Scheduled run':p.src==='man'?'Manual run':'Pump running'} · ${fmtMin(Math.max(1,Math.round(p.total/60)))}</div>
+      <button class="stop" id="b-stop" data-act="stop">Stop pump</button></div>`;
+  } else {
+    hero=`<div class="card pump">
+      <div class="ring"><svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="88"/></svg>
+        <button class="go" id="b-go" data-act="start" ${S.connected?'':'disabled'}>${ICON.play}<b>Run now</b><small>${S.connected?fmtMin(S.runDur)+' · '+litres(S.runZone,S.runDur)+' L':'Pair a pump first'}</small></button></div>
+      ${S.real?'':`<div class="chips" role="group" aria-label="Zone">${S.zones.map(z=>`<button class="chip" id="rz-${z.id}" data-act="runZone" data-v="${z.id}" aria-pressed="${S.runZone===z.id}"><span class="sw" style="background:${zcol(z.id)}"></span>${z.name.split(' ')[0]==='Vegetable'?'Veg garden':z.name}</button>`).join('')}</div>`}
+      <div class="chips" role="group" aria-label="Duration">${(S.real?[1,5,10,15,30,60]:[5,10,15,30,60]).map(m=>`<button class="chip" id="rd-${m}" data-act="runDur" data-v="${m}" aria-pressed="${S.runDur===m}">${fmtMin(m)}</button>`).join('')}</div></div>`;
+  }
+  const z0=nx[0];
+  return `<div class="hdr"><div><small>${greet}, ${now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</small><h2>Your pump</h2></div>
+    ${S.real?'':`<div class="icon-btn" title="31°C, no rain forecast" style="color:var(--soil)">${ICON.cloud}</div>`}</div>
+    ${deviceCard()}${realBanner()}
+    ${hero}
+    <div class="stats">
+      <div class="stat"><div class="k">Used today</div><div class="v" id="used">${Math.round(S.usedToday)} L</div><div class="s">all zones</div></div>
+      <div class="stat"><div class="k">Next run</div><div class="v">${z0?hm(z0.at):'—'}</div><div class="s">${z0?(whenLabel(z0.at).startsWith('Today')?'today':whenLabel(z0.at).split(' ')[0].toLowerCase()):'none set'}</div></div>
+      ${S.real?`<div class="stat"><div class="k">Clock</div><div class="v">${S.clock===null?'—':S.clock?'Set':'Not set'}</div><div class="s">set by this phone</div></div>`:`<div class="stat"><div class="k">Rain</div><div class="v">0 mm</div><div class="s">31°C · dry</div></div>`}
+    </div>
+    <div class="sec-title"><h3>Coming up</h3><button id="b-allsched" data-act="tab" data-v="sched">All schedules</button></div>
+    <div class="card">${nx.length?nx.map(({at,s})=>{const z=zone(s.zone);return `<div class="row"><span class="zbar" style="background:${zcol(z.id)}"></span><div class="mid"><b>${z.name}</b><span>${whenLabel(at)} · ${fmtMin(s.dur)} · ~${litres(z.id,s.dur)} L</span></div></div>`}).join(''):'<div class="empty">No schedules switched on.</div>'}</div>`;
+}
+function weekStrip(){
+  const now=new Date(),today=dow(now),nowPct=(now.getHours()*60+now.getMinutes())/1440*100;
+  let h='';
+  DAYS.forEach((d,i)=>{
+    h+=`<span class="d ${i===today?'today':''}">${d.slice(0,2)}</span><div class="lane">`;
+    S.schedules.filter(s=>s.on&&s.days.includes(i)).forEach(s=>{
+      const [hh,mm]=s.time.split(':').map(Number),st=(hh*60+mm)/1440*100;
+      h+=`<i style="left:${st}%;width:${Math.min(s.dur/1440*100,100-st)}%;background:${zcol(s.zone)}" title="${zone(s.zone).name} ${s.time}"></i>`;
+    });
+    if(i===today)h+=`<span class="now" style="left:${nowPct}%"></span>`;
+    h+='</div>';
+  });
+  return `<div class="card"><div class="week">${h}<div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div></div>`;
+}
+function schedView(){
+  const list=[...S.schedules].sort((a,b)=>a.time.localeCompare(b.time));
+  const weekly=S.schedules.filter(s=>s.on).reduce((t,s)=>t+litres(s.zone,s.dur)*s.days.length,0);
+  return `<div class="hdr"><div><small>${S.schedules.filter(s=>s.on).length} active · ~${weekly.toLocaleString('en-GB')} L a week</small><h2>Schedules</h2></div></div>
+    ${realSchedNote()}${weekStrip()}
+    ${list.map(s=>{const z=zone(s.zone);return `<div class="card sched ${s.on?'':'off'}" id="sc-${s.id}" data-act="edit" data-v="${s.id}" role="button" tabindex="0">
+      <div class="sched-top"><span class="zbar" style="background:${zcol(z.id)}"></span><span class="tm">${s.time}</span>
+        <div class="mid"><b>${z.name}</b><span>${fmtMin(s.dur)} · ~${litres(z.id,s.dur)} L</span></div>
+        <button class="switch" id="sw-${s.id}" role="switch" aria-checked="${s.on}" aria-label="Turn schedule ${s.on?'off':'on'}" data-act="toggle" data-v="${s.id}"></button></div>
+      <div class="daydots">${DAYS.map((d,i)=>`<span class="${s.days.includes(i)?'on':''}">${d[0]}</span>`).join('')}</div>
+      <div class="tags"><span class="tag">${daysLabel(s.days)}</span>${s.skipRain?'<span class="tag">Skips if rain is forecast</span>':''}</div></div>`}).join('')}
+    ${list.length?'':'<div class="card"><div class="empty">No schedules yet. Tap + to add a watering time.</div></div>'}
+    <div style="height:56px"></div>`;
+}
+function zonesView(){
+  return `<div class="hdr"><div><small>${S.zones.length} zones on one pump</small><h2>Zones</h2></div></div>
+  ${S.zones.map(z=>{const cnt=S.schedules.filter(s=>s.on&&s.zone===z.id).length;const low=z.moisture<z.target-8;return `<div class="card zone">
+    <div class="zone-top"><div class="zone-ic" style="background:${zcol(z.id)}">${ICON[z.icon]}</div>
+      <div class="mid"><b>${z.name}</b><span>${z.kind} · ${z.area>=1000?(z.area/10000).toFixed(2)+' ha':z.area+' m²'}</span></div>
+      <button class="pill-btn sec" id="wz-${z.id}" data-act="waterZone" data-v="${z.id}" ${S.connected&&!S.pump?'':'disabled'}>Water now</button></div>
+    <div class="moist"><div class="lab"><span>Soil moisture ${low?'<span class="src skip">Below target</span>':''}</span><b>${z.moisture}% / ${z.target}%</b></div>
+      <div class="bar"><i style="width:${z.moisture}%"></i><span class="target" style="left:${z.target}%"></span></div></div>
+    <div class="zgrid"><div>Flow<b>${z.flow} L/min</b></div><div>Schedules<b>${cnt}</b></div><div>Last watered<b>${ago(z.last)}</b></div></div></div>`}).join('')}`;
+}
+function logView(){
+  const groups={};
+  [...S.log].sort((a,b)=>b.t-a.t).forEach(e=>{
+    const d=new Date(e.t),t0=new Date();t0.setHours(0,0,0,0);
+    const diff=Math.round((t0-new Date(d).setHours(0,0,0,0))/864e5);
+    const k=diff===0?'Today':diff===1?'Yesterday':d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+    (groups[k]=groups[k]||[]).push(e);
+  });
+  const total=S.log.filter(e=>e.src!=='skip'&&Date.now()-e.t<7*864e5).reduce((t,e)=>t+litres(e.zone,e.min),0);
+  return `<div class="hdr"><div><small>~${total.toLocaleString('en-GB')} L pumped in the last 7 days</small><h2>Activity</h2></div></div>
+  ${Object.entries(groups).map(([k,es])=>`<div class="day-h">${k}</div><div class="card">${es.map(e=>{const z=zone(e.zone);return `<div class="row"><span class="tm" style="font-size:14px">${hm(new Date(e.t))}</span>
+    <div class="mid"><b>${z.name}</b><span>${e.src==='skip'?'Rain forecast, run skipped':fmtMin(e.min)+' · '+z.kind}</span></div>
+    <div class="lit">${e.src==='skip'?'—':litres(z.id,e.min)+' L'}<small><span class="src ${e.src}">${e.src==='auto'?'Schedule':e.src==='man'?'Manual':e.src==='skip'?'Skipped':'Pump'}</span></small></div></div>`}).join('')}</div>`).join('')}`;
+}
+
+/* ---------------- sheets ---------------- */
+function editSheet(){
+  const d=S.draft,isNew=!d.id;
+  return `<div class="scrim" data-act="closeSheet"><div class="sheet" role="dialog" aria-label="${isNew?'New':'Edit'} schedule" data-stop="1">
+    <div class="grab"></div><h3>${isNew?'New schedule':'Edit schedule'}</h3>
+    ${S.real?'':`<div class="field"><span class="fl">Zone</span><div class="chips">${S.zones.map(z=>`<button class="chip" id="dz-${z.id}" data-act="dZone" data-v="${z.id}" aria-pressed="${d.zone===z.id}"><span class="sw" style="background:${zcol(z.id)}"></span>${z.name}</button>`).join('')}</div></div>`}
+    <div class="field"><label for="f-time">Start time</label><input class="timein" type="time" id="f-time" value="${d.time}"></div>
+    <div class="field"><span class="fl">Repeat on</span><div class="days">${DAYS.map((x,i)=>`<button id="dd-${i}" data-act="dDay" data-v="${i}" aria-pressed="${d.days.includes(i)}" aria-label="${x}">${x[0]}</button>`).join('')}</div>
+      <div class="quick"><button id="q-all" data-act="dPreset" data-v="all">Every day</button>·<button id="q-wk" data-act="dPreset" data-v="wk">Weekdays</button>·<button id="q-alt" data-act="dPreset" data-v="alt">Mon, Wed, Fri</button>·<button id="q-we" data-act="dPreset" data-v="we">Weekends</button></div></div>
+    <div class="field"><span class="fl">Run for</span><div class="stepper"><button id="d-minus" data-act="dDur" data-v="-5" aria-label="5 minutes less">−</button><output id="d-out">${fmtMin(d.dur)}</output><button id="d-plus" data-act="dDur" data-v="5" aria-label="5 minutes more">+</button><small>~${litres(d.zone,d.dur)} L<br>per run</small></div></div>
+    ${S.real?'':`<div class="trow"><div><b>Skip when rain is forecast</b><span>Checks the forecast an hour before</span></div><button class="switch" id="d-rain" role="switch" aria-checked="${d.skipRain}" data-act="dRain" aria-label="Skip when rain is forecast"></button></div>`}
+    <div class="actions">${isNew?'':'<button class="danger-link" id="d-del" data-act="dDelete">Delete</button>'}<button class="pill-btn" id="d-save" data-act="dSave">${isNew?'Add schedule':'Save changes'}</button></div>
+  </div></div>`;
+}
+const FOUND=[
+  {name:'Borehole Pump BP-200',mac:'F4:12:9A:3C:7E:01',rssi:-58},
+  {name:'AquaDrive Solar 24V',mac:'C8:2B:96:11:A0:5D',rssi:-71},
+  {name:'ESP32-PumpCtl',mac:'24:6F:28:B1:09:EE',rssi:-83}
+];
+function pairSheet(){
+  const p=S.pair;
+  const bars=r=>{const n=r>-65?4:r>-75?3:r>-85?2:1;return `<span class="sig">${[5,8,11,14].map((h,i)=>`<i class="${i<n?'on':''}" style="height:${h}px"></i>`).join('')}</span>`};
+  const radar=msg=>`<div class="scan"><div class="radar">${ICON.ble}</div><span style="color:var(--muted);font-size:13.5px;text-align:center">${msg}</span></div>`;
+  let body;
+  if(p.connecting) body=radar((p.demo?'Pairing with ':'Connecting to ')+esc(p.connecting)+'…');
+  else if(p.error){
+    const msg=p.error==='cancel'?'<b>No pump chosen</b><span>Is the pump switched on and close to you? Close nRF Connect first, because the pump can only talk to one app at a time.</span>'
+      :p.error==='blocked'?(inBluefy?'<b>Bluetooth can’t reach this page</b><span>Bluefy can’t use Bluetooth inside this page. Use the nRF Toolbox remote for your real pump.</span>'
+        :'<b>This browser blocks Bluetooth here</b><span>On an iPhone, open this page in the free Bluefy app. You can also use the nRF Toolbox remote.</span>')
+      :'<b>Could not connect</b><span>'+esc(p.error)+'</span>';
+    body=`<div class="card note warn">${msg}</div>
+    <div class="actions"><button class="ghost" id="b-demo" data-act="demoPair">Use demo pump</button><button class="pill-btn" id="b-retry" data-act="pair">Try again</button></div>`;
+  }
+  else if(p.waiting) body=radar('Pick <b>Furrow Pump</b> in the Bluetooth list. Make sure the pump is switched on.');
+  else body=(hasBLE?'':`<div class="card note"><b>Demo pumps</b><span>${inBluefy?'Bluetooth can’t reach this page in Bluefy, so these pumps are pretend.':'This browser can’t use Bluetooth, so these pumps are pretend. On an iPhone, open this page in the free Bluefy app to use your real pump.'}</span></div>`)
+    +radar('Looking for pumps nearby. Make sure yours is switched on.')
+    +`<div class="found">${p.found.map((f,i)=>`<button id="pf-${i}" data-act="connect" data-v="${i}">${ICON.drop.replace('<svg','<svg style="width:22px;height:22px;color:var(--water)"')}<div class="mid"><b>${f.name}</b><span>${f.mac}</span></div>${bars(f.rssi)}</button>`).join('')}</div>`;
+  return `<div class="scrim" data-act="closeSheet"><div class="sheet" role="dialog" aria-label="Pair a pump" data-stop="1">
+    <div class="grab"></div><h3>${p.connecting?'Connecting…':'Pair a pump'}</h3>${body}
+  </div></div>`;
+}
+
+function demoCard(){
+  if(S.real) return `<div class="day-h">Real pump</div><div class="card demo-card">
+    <p>${S.connected?'You are controlling your real Furrow pump.':'Your real pump is not connected right now.'} The schedules live inside the pump, so it keeps watering when this page is closed.</p>
+    <div class="ctrl-row"><button class="ghost" id="c-demo" data-act="toDemo">Back to the demo</button></div></div>`;
+  return `<div class="day-h">Demo</div><div class="card demo-card">
+    <p>${hasBLE?'The pump and data here are pretend until you tap <b>Connect real pump</b> on Home.':'This app is a demo: the pump and Bluetooth are pretend. To control your real pump from an iPhone, open this page in the free Bluefy app.'}</p>
+    <div class="ctrl-row"><span class="lbl">Time speed</span><div class="seg" role="group" aria-label="Time speed"><button id="sp1" data-act="speed" data-v="1" aria-pressed="${S.speed===1}">1×</button><button id="sp60" data-act="speed" data-v="60" aria-pressed="${S.speed===60}">60×</button></div></div>
+    <div class="ctrl-row"><button class="ghost" id="c-next" data-act="fireNext">Run next schedule now</button><button class="ghost" id="c-drop" data-act="disconnect">Drop connection</button><button class="ghost" id="c-reset" data-act="reset">Reset demo</button></div>
+  </div>`;
+}
+
+/* ---------------- render & actions ---------------- */
+const $=id=>document.getElementById(id);
+function render(){
+  const v=$('view'),st=v.scrollTop,same=v.dataset.tab===S.tab;
+  v.innerHTML=S.tab==='home'?homeView():S.tab==='sched'?schedView():S.tab==='zones'?zonesView():logView()+demoCard()+backupCard();
+  v.dataset.tab=S.tab; if(same)v.scrollTop=st;
+  $('tabs').innerHTML=tabsHTML();
+  let o='';
+  if(S.tab==='sched'&&!S.sheet&&(!S.real||(S.connected&&S.replies)))o+=`<button class="fab" id="b-add" data-act="add" aria-label="New schedule">${ICON.plus}</button>`;
+  if(S.sheet==='edit')o+=editSheet();
+  if(S.sheet==='pair')o+=pairSheet();
+  $('overlay').innerHTML=o;
+  ['sp1','sp60'].forEach(id=>{const b=$(id);if(b)b.setAttribute('aria-pressed',String((id==='sp60')===(S.speed===60)))});
+}
+let toastT;
+function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
+
+function startPump(zid,min,src){
+  if(!S.connected){toast('Connect a pump first.');return}
+  if(S.pump)return;
+  S.pump={zone:zid,total:min*60,elapsed:0,src};
+  S.tab='home';S.sheet=null;render();
+  toast(`Pump on · ${zone(zid).name} for ${fmtMin(min)}`);
+}
+function stopPump(done){
+  const p=S.pump;if(!p)return;
+  const min=Math.max(1,Math.round(p.elapsed/60));
+  S.log.push({t:Date.now(),zone:p.zone,min,src:p.src});
+  const z=zone(p.zone);z.last=Date.now();z.moisture=Math.min(80,z.moisture+Math.round(min/3));
+  S.pump=null;render();
+  toast(done?`Done · ${z.name} got ~${litres(z.id,min)} L`:'Pump stopped');
+}
+function blankDraft(){return {zone:'veg',time:'06:00',days:[0,2,4],dur:15,skipRain:true}}
+
+const ACT={
+  tab:v=>{S.tab=v;S.sheet=null;render();$('view').scrollTop=0},
+  speed:v=>{S.speed=+v;render();toast(S.speed===60?'Time runs 60× faster: 1 min passes per second':'Time back to normal speed')},
+  runZone:v=>{S.runZone=v;render()},
+  runDur:v=>{S.runDur=+v;render()},
+  start:()=>{
+    if(!S.real){startPump(S.runZone,S.runDur,'man');return}
+    if(!S.connected){toast('Connect your pump first.');return}
+    send('RUN '+S.runDur*60);
+    if(!S.replies)startPump('veg',S.runDur,'man')},   // old pump code sends no replies, so time it here
+  stop:()=>{if(S.real){send('OFF');if(!S.replies)stopPump(false);return}stopPump(false)},
+  waterZone:v=>startPump(v,S.runDur,'man'),
+  disconnect:()=>{
+    if(S.real){const d=BT.dev;BT.rx=null;BT.tx=null;S.connected=false;S.pump=null;S.clock=null;render();
+      toast('Disconnected. The pump keeps its schedules.');try{d&&d.gatt.disconnect()}catch(e){}return}
+    if(S.pump)stopPump(false);S.connected=false;render();toast('Pump disconnected')},
+  pair:()=>{if(hasBLE)realPair();else demoScan()},
+  demoPair:()=>{if(S.real)ACT.toDemo();S.connected=false;demoScan()},
+  reconnect:()=>{if(BT.dev)realConnect(BT.dev);else realPair()},
+  setClock:()=>{syncClock();send('Q')},
+  toDemo:()=>{const d=BT.dev;BT.dev=null;BT.rx=null;BT.tx=null;S.connected=false;
+    try{d&&d.gatt.disconnect()}catch(e){}
+    S=loadDemo();render();toast('Back to the demo')},
+  connect:v=>{const f=S.pair.found[+v];S.pair.connecting=f.name;render();
+    setTimeout(()=>{S.device={name:f.name,mac:f.mac,rssi:f.rssi,battery:72+Math.floor(Math.random()*25)};S.connected=true;S.sheet=null;S.pair=null;render();toast('Connected to '+f.name)},1600)},
+  closeSheet:()=>{S.sheet=null;render()},
+  add:()=>{
+    if(S.real&&freeSlot()===undefined){toast('The pump can hold 8 schedules.');return}
+    S.draft=blankDraft();if(S.real)S.draft.skipRain=false;S.sheet='edit';render()},
+  edit:v=>{const s=S.schedules.find(x=>x.id===+v);S.draft=JSON.parse(JSON.stringify(s));S.sheet='edit';render()},
+  toggle:v=>{const s=S.schedules.find(x=>x.id===+v);
+    if(S.real){if(!S.connected||!S.replies){toast('Connect your pump first.');return}
+      s.on=!s.on;send(toLine(s));render();toast(`${s.time} switched ${s.on?'on':'off'}`);return}
+    s.on=!s.on;save();render();toast(`${zone(s.zone).name} at ${s.time} ${s.on?'on':'off'}`)},
+  dZone:v=>{S.draft.zone=v;render()},
+  dDay:v=>{const d=S.draft.days,i=+v;S.draft.days=d.includes(i)?d.filter(x=>x!==i):[...d,i];render()},
+  dPreset:v=>{S.draft.days={all:[0,1,2,3,4,5,6],wk:[0,1,2,3,4],alt:[0,2,4],we:[5,6]}[v];render()},
+  dDur:v=>{const d=S.draft,up=+v>0;
+    if(S.real){const step=up?(d.dur<10?1:5):(d.dur<=10?1:5);d.dur=Math.min(60,Math.max(1,d.dur+(up?step:-step)))}
+    else d.dur=Math.min(240,Math.max(5,d.dur+ +v));
+    render()},
+  dRain:()=>{S.draft.skipRain=!S.draft.skipRain;render()},
+  dSave:()=>{const d=S.draft;
+    if(!d.days.length){toast('Pick at least one day.');return}
+    if(!/^\d\d:\d\d$/.test(d.time)){toast('Set a start time.');return}
+    if(S.real){
+      if(!S.connected||!S.replies){toast('Connect your pump first.');return}
+      if(d.slot===undefined){const f=freeSlot();if(f===undefined){toast('The pump can hold 8 schedules.');return}d.slot=f;d.id=f+1;d.on=true}
+      d.zone='veg';d.skipRain=false;
+      const i=S.schedules.findIndex(s=>s.slot===d.slot);if(i>=0)S.schedules[i]=d;else S.schedules.push(d);
+      send(toLine(d));S.sheet=null;render();toast(`Saved in the pump · ${daysLabel(d.days).toLowerCase()} at ${d.time}`);return}
+    if(d.id){Object.assign(S.schedules.find(s=>s.id===d.id),d)}else{d.id=Math.max(0,...S.schedules.map(s=>s.id))+1;d.on=true;S.schedules.push(d)}
+    save();S.sheet=null;render();toast(`Saved · ${zone(d.zone).name}, ${daysLabel(d.days).toLowerCase()} at ${d.time}`)},
+  dDelete:()=>{
+    if(S.real){if(!S.connected){toast('Connect your pump first.');return}send('D '+S.draft.slot)}
+    S.schedules=S.schedules.filter(s=>s.id!==S.draft.id);save();S.sheet=null;render();toast('Schedule deleted')},
+  fireNext:()=>{const n=nextRuns(1)[0];if(!n){toast('No schedules are switched on.');return}
+    if(S.pump){toast('The pump is already running.');return}
+    startPump(n.s.zone,n.s.dur,'auto')},
+  reset:()=>{try{localStorage.removeItem('furrow-schedules')}catch(e){}S=seed();render();toast('Demo data reset')}
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  if(el.dataset.act==='closeSheet'&&e.target!==el)return; // clicks inside the sheet
+  if(el.dataset.act==='toggle')e.stopPropagation();
+  ACT[el.dataset.act]?.(el.dataset.v);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&S.sheet){S.sheet=null;render()}
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('.sched[data-act]')){e.preventDefault();ACT.edit(e.target.dataset.v)}
+});
+document.addEventListener('input',e=>{if(e.target.id==='f-time'&&S.draft)S.draft.time=e.target.value});
+
+/* ---------------- the real pump over Bluetooth ----------------
+   Works where the browser has Web Bluetooth: the free Bluefy app on iPhone,
+   or Chrome / Edge on Android and computers. Needs FurrowPump v2 on the pump.
+   The pump understands short text commands (see the top of FurrowPump.ino). */
+const NUS='6e400001-b5a3-f393-e0a9-e50e24dcca9e',RXU='6e400002-b5a3-f393-e0a9-e50e24dcca9e',TXU='6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const hasBLE=!!(navigator.bluetooth&&navigator.bluetooth.requestDevice);
+const inBluefy=/bluefy/i.test(navigator.userAgent);
+const BT={dev:null,rx:null,tx:null,queue:Promise.resolve(),incoming:[]};
+const realZone=()=>({id:'veg',name:'Seedling tray',kind:'Mini pump · 6 mm tube',area:1,flow:1.5,moisture:0,target:0,icon:'sprout',last:Date.now()});
+const dayMask=days=>days.reduce((m,i)=>m|(1<<i),0);
+const toLine=s=>`S ${s.slot} ${s.time.replace(':','')} ${dayMask(s.days)} ${s.dur} ${s.on?1:0}`;
+function fromLine(l){   // "S 0 0630 21 15 1" -> a schedule
+  const p=l.split(/\s+/);if(p.length<6)return null;
+  const slot=+p[1],t=p[2].padStart(4,'0'),m=+p[3];
+  return {id:slot+1,slot,zone:'veg',time:t.slice(0,2)+':'+t.slice(2),days:[0,1,2,3,4,5,6].filter(i=>m&(1<<i)),dur:+p[4],on:p[5]==='1',skipRain:false};
+}
+const freeSlot=()=>[0,1,2,3,4,5,6,7].find(i=>!S.schedules.some(s=>s.slot===i));
+
+function send(text){   // one command at a time, in order
+  if(!BT.rx||!S.connected){toast('Connect your pump first.');return}
+  const c=BT.rx,data=new TextEncoder().encode(text);
+  BT.queue=BT.queue.then(()=>c.writeValue?c.writeValue(data):c.writeValueWithResponse(data))
+    .catch(e=>toast('Could not send to the pump: '+(e&&e.message||e)));
+}
+function syncClock(){send('T '+Math.floor(Date.now()/1000)+' '+(-new Date().getTimezoneOffset()))}
+
+function demoScan(){
+  S.sheet='pair';S.pair={found:[],connecting:null,demo:true};render();
+  FOUND.forEach((f,i)=>setTimeout(()=>{if(S.sheet==='pair'&&S.pair&&S.pair.demo&&!S.pair.connecting){S.pair.found.push(f);render()}},900+i*700));
+}
+function realPair(){
+  S.sheet='pair';S.pair={found:[],connecting:null,waiting:true,error:null};render();
+  let req;
+  try{req=navigator.bluetooth.requestDevice({filters:[{services:[NUS]},{namePrefix:'Furrow'}],optionalServices:[NUS]})}
+  catch(e){req=Promise.reject(e)}
+  req.then(realConnect).catch(e=>{
+    const kind=e&&e.name==='NotFoundError'?'cancel':e&&e.name==='SecurityError'?'blocked':(e&&e.message||String(e));
+    S.sheet='pair';S.pair={found:[],connecting:null,waiting:false,error:kind};render();
+  });
+}
+async function realConnect(dev){
+  S.sheet='pair';S.pair={found:[],connecting:dev.name||'Furrow Pump',waiting:false,error:null};render();
+  try{
+    dev.removeEventListener('gattserverdisconnected',onRealDisconnect);
+    dev.addEventListener('gattserverdisconnected',onRealDisconnect);
+    const server=await dev.gatt.connect();
+    const svc=await server.getPrimaryService(NUS);
+    const rx=await svc.getCharacteristic(RXU);
+    let tx=null;try{tx=await svc.getCharacteristic(TXU)}catch(e){}
+    BT.dev=dev;BT.rx=rx;BT.tx=tx;BT.incoming=[];BT.queue=Promise.resolve();
+    enterReal(dev.name||'Furrow Pump',!!tx);
+    if(tx){
+      tx.removeEventListener('characteristicvaluechanged',onReply);
+      tx.addEventListener('characteristicvaluechanged',onReply);
+      try{await tx.startNotifications()}catch(e){S.replies=false;render()}
+      if(S.replies){syncClock();send('Q');send('L')}
+    }
+    toast('Connected to '+S.device.name);
+  }catch(e){
+    try{dev.gatt.disconnect()}catch(_){}
+    S.sheet='pair';S.pair={found:[],connecting:null,waiting:false,error:e&&e.message||String(e)};render();
+  }
+}
+function enterReal(name,replies){
+  if(!S.real){   // swap the demo data for the real pump
+    S.real=true;S.zones=[realZone()];S.schedules=[];S.log=[];S.usedToday=0;
+    S.runZone='veg';S.pump=null;S.speed=1;if(S.tab==='zones')S.tab='home';
+  }
+  S.replies=replies;S.clock=null;S.device={name,mac:'',rssi:0,battery:0};
+  S.connected=true;S.sheet=null;S.pair=null;render();
+}
+function onRealDisconnect(){
+  if(!S.real||!S.connected)return;
+  BT.rx=null;BT.tx=null;S.connected=false;S.pump=null;S.clock=null;
+  render();toast('The pump disconnected. Its schedules keep running.');
+}
+function onReply(e){
+  const text=new TextDecoder().decode(e.target.value);
+  text.split(/[\r\n]+/).forEach(l=>{l=l.trim();if(l)handleLine(l)});
+}
+function handleLine(l){   // one message from the pump
+  const p=l.split(/\s+/),a=+p[1]||0;
+  if(p[0]==='GO'){        // GO <seconds> <A = app, or schedule number>
+    const sched=/^\d$/.test(p[2]||'');
+    S.pump={zone:'veg',total:Math.max(1,a),elapsed:0,src:sched?'auto':'man'};render();
+    toast(sched?'A schedule started the pump':'Pump on for '+fmtMin(Math.max(1,Math.round(a/60))));
+  }else if(p[0]==='ON'){  // ON <seconds left> <total seconds>
+    const total=Math.max(1,+p[2]||a);
+    S.pump={zone:'veg',total,elapsed:Math.max(0,total-a),src:S.pump?S.pump.src:'pump'};render();
+  }else if(p[0]==='OFF'){
+    if(S.pump)stopPump(S.pump.total-S.pump.elapsed<2);
+  }else if(p[0]==='CLK'){
+    S.clock=p[1]==='1';render();
+  }else if(p[0]==='S'){
+    const s=fromLine(l);if(s)BT.incoming.push(s);
+  }else if(p[0]==='END'){
+    S.schedules=BT.incoming;BT.incoming=[];render();
+  }
+}
+function realBanner(){
+  if(S.real){
+    if(!S.connected)return '';
+    if(!S.replies)return `<div class="card note warn"><b>The pump is not sending replies</b><span>Run and Stop still work. For schedules, upload FurrowPump v2 with the Arduino IDE, then connect again.</span></div>`;
+    if(S.clock===false)return `<div class="card note warn"><b>The pump’s clock is not set</b><span>Schedules only run when the pump knows the time.</span><button class="pill-btn sec" id="b-clock" data-act="setClock">Set the clock</button></div>`;
+    return '';
+  }
+  if(hasBLE)return `<div class="card note"><b>Control your real pump</b><span>This browser can use Bluetooth. Switch your Furrow pump on, then connect to it.</span><button class="pill-btn" id="b-real" data-act="pair">Connect real pump</button></div>`;
+  return `<div class="card note"><b>Demo mode</b><span>${inBluefy?'Bluetooth can’t reach this page in Bluefy. Use the nRF Toolbox remote for your real pump.':'This browser can’t use Bluetooth. To control your real pump from an iPhone, open this page in the free Bluefy app.'}</span></div>`;
+}
+const tCmd=()=>'T '+Math.floor(Date.now()/1000)+' '+(-new Date().getTimezoneOffset());
+function backupCard(){   // plan B: the free nRF Toolbox app sends the same text commands
+  return `<div class="day-h">Backup remote</div>
+  <details class="card backup"><summary><b>Use nRF Toolbox instead</b><span>If Bluefy can’t connect, this free app from the makers of nRF Connect can control the pump. Tap to see how.</span></summary>
+    <ol>
+      <li>Upload <b>FurrowPump v2</b> to the pump with the Arduino IDE.</li>
+      <li>Install <b>nRF Toolbox</b> from the App Store. It needs iOS 18 or newer.</li>
+      <li>Close Bluefy and nRF Connect. The pump can only talk to one app at a time.</li>
+      <li>In nRF Toolbox, open <b>Nordic UART</b> and connect to <b>Furrow Pump</b>.</li>
+      <li>Type a command from the list below and send it. Save the ones you use most as macros. They become one-tap buttons.</li>
+    </ol>
+    <table class="cmds">
+      <tr><td><code>RUN 60</code></td><td>Water for 1 minute (<code>RUN 300</code> = 5 minutes)</td></tr>
+      <tr><td><code>OFF</code></td><td>Stop the pump</td></tr>
+      <tr><td><code>Q</code></td><td>Is it running? Is its clock set?</td></tr>
+      <tr><td><code>L</code></td><td>List the schedules</td></tr>
+      <tr><td><code>S 0 0630 21 15 1</code></td><td>Schedule 0 at 06:30 on Mon, Wed, Fri for 15 minutes, switched on</td></tr>
+      <tr><td><code>D 0</code></td><td>Delete schedule 0</td></tr>
+    </table>
+    <p>Days are added up: Mon 1, Tue 2, Wed 4, Thu 8, Fri 16, Sat 32, Sun 64. Every day is 127.</p>
+    <p>Schedules only run once the pump knows the time. Send this clock command first. It changes every second, so copy it and send it straight away:</p>
+    <code class="tcmd" id="tcmd">${tCmd()}</code>
+  </details>`;
+}
+function realSchedNote(){
+  if(!S.real)return '';
+  if(!S.connected)return `<div class="card note"><b>Not connected</b><span>These are the schedules last read from your pump. Connect to change them.</span></div>`;
+  if(!S.replies)return `<div class="card note warn"><b>Schedules need the new pump code</b><span>Upload FurrowPump v2 with the Arduino IDE, then connect again.</span></div>`;
+  return `<div class="card note"><b>Saved inside your pump</b><span>The pump waters on time even when this page is closed. It can hold 8 schedules.</span></div>`;
+}
+
+/* ---------------- clock: pump countdown + real schedule triggers ---------------- */
+let lastMin='';
+setInterval(()=>{
+  const now=new Date();
+  const p=S.pump;
+  if(p){
+    const dt=.25*(S.real?1:S.speed);p.elapsed=Math.min(p.total,p.elapsed+dt);
+    S.usedToday+=zone(p.zone).flow*dt/60;
+    if(p.elapsed>=p.total){stopPump(true);return}
+    const left=p.total-p.elapsed;
+    if($('prog'))$('prog').setAttribute('stroke-dashoffset',552.9*(1-p.elapsed/p.total));
+    if($('count'))$('count').textContent=pad(Math.floor(left/60))+':'+pad(Math.floor(left%60));
+    if($('plit'))$('plit').textContent=(zone(p.zone).flow*p.elapsed/60).toFixed(0)+' L pumped';
+    if($('used'))$('used').textContent=Math.round(S.usedToday)+' L';
+  }
+  if($('tcmd'))$('tcmd').textContent=tCmd();
+  const key=hm(now);
+  if(key!==lastMin&&!S.real){lastMin=key;   // the real pump runs its own schedules
+    const due=S.schedules.find(s=>s.on&&s.time===key&&s.days.includes(dow(now)));
+    if(due&&S.connected&&!S.pump)startPump(due.zone,due.dur,'auto');
+  }
+},250);
+
+render();
+</script>
+</body>
+</html>
